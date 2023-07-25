@@ -1,0 +1,18 @@
+{
+    "compileOnSave": true,
+    "compilerOptions": {
+        "module": "None",
+        "noImplicitAny": true,
+        "target": "ES2022",
+        "removeComments": true,
+        "sourceMap": true,
+        "alwaysStrict": true,
+    },
+    "files": [
+        "declarations.d.ts",
+        "tracker.ts",
+        "badge.ts",
+        "worker.ts",
+        "background.ts",
+    ]
+}

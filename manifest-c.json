@@ -11,7 +11,7 @@
   "background": {
     "scripts": [
       "helper.js",
-      "tabsInfo.js",
+      "tracker.js",
       "options.js",
       "urlUtils.js",
       "badge.js",

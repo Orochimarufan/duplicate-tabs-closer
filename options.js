@@ -133,7 +133,7 @@ const setStoredOption = async (name, value, refresh) => {
     setOptions(storedOptions);
     if (refresh) refreshGlobalDuplicateTabsInfo();
     else if (name === "onDuplicateTabDetected") setBadgeIcon();
-    else if (name === "showBadgeIfNoDuplicateTabs" || name === "badgeColorNoDuplicateTabs" || name === "badgeColorDuplicateTabs") updateBadgeStyle();
+    else if (name === "showBadgeIfNoDuplicateTabs" || name === "badgeColorNoDuplicateTabs" || name === "badgeColorDuplicateTabs") updateBadges();
 };
 
 const options = {};
@@ -158,6 +158,7 @@ const setOptions = (storedOptions) => {
     options.badgeColorDuplicateTabs = storedOptions.badgeColorDuplicateTabs.value;
     options.badgeColorNoDuplicateTabs = storedOptions.badgeColorNoDuplicateTabs.value;
     options.showBadgeIfNoDuplicateTabs = storedOptions.showBadgeIfNoDuplicateTabs.value;
+    tabsInfo.setOptions(options);
 };
 
 const environment = {

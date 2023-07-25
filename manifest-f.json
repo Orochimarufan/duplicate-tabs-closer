@@ -11,13 +11,13 @@
   "applications": {
     "gecko": {
       "id": "jid0-RvYT2rGWfM8q5yWxIxAHYAeo5Qg@jetpack",
-      "strict_min_version": "68.0"
+      "strict_min_version": "93.0"
     }
   },
   "background": {
     "scripts": [
       "helper.js",
-      "tabsInfo.js",
+      "tracker.js",
       "options.js",
       "urlUtils.js",
       "badge.js",
