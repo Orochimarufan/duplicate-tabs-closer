@@ -1,5 +1,17 @@
 # Update package
 *.zip
+*.crx
+*.xpi
+
+# TypeScript artefacts
+*.js.map
+/background.js
+/badge.js
+/tracker.js
+/worker.js
+
+# Browser-specific manifest file
+/manifest.json
 
 ### VisualStudioCode ###
 .vscode/*
