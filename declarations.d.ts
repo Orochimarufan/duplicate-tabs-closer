@@ -14,6 +14,7 @@ type WeTab = {
     incognito: boolean,
     favIconUrl: string,
     status: "complete"|"loading",
+    lastAccessed?: number, // Firefox only
 };
 
 type WeWindow = {

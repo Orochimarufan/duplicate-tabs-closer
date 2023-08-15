@@ -161,13 +161,13 @@ class Tracker {
                         Array.from(group, id => getTab(id)))));
     }
 
-    #newTabInfo(id: TabId): TabInfo {
+    #newTabInfo(id: TabId, lastAccessed?: number): TabInfo {
         return {
             id,
             windowId: -2,
             url: "",
             key: "",
-            timestamp: Date.now(),
+            timestamp: lastAccessed ?? Date.now(),
             pinned: false,
             ignored: false,
         };
@@ -281,7 +281,7 @@ class Tracker {
                 this.#dropTabFromGroup(info, window);
         } else {
             // New tab
-            info = this.#newTabInfo(tab.id);
+            info = this.#newTabInfo(tab.id, tab.lastAccessed);
             this.#tabs.set(tab.id, info);
         }
         // Update info from tab object
