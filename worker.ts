@@ -1,7 +1,16 @@
 const tabsInfo = new Tracker();
 
+type RemainingTabActions = {
+    tabId: TabId,
+    reloadTab: boolean,         ///< Reload tab to ensure it's up-to-date
+    observedTabClosed: boolean, ///< Remaining tab isn't triggering tab
+    tabIndex?: number,          ///< Triggering tab index
+    active: boolean,            ///< Tab group had focus
+    bulk: boolean,             ///< Is bulk operation, don't focus even if enabled
+};
 
-async function closeDuplicateTabsGroup(group: Set<TabId>, observedTab?: WeTab): Promise<void> {
+
+async function closeDuplicateTabsGroup(group: Set<TabId>, observedTab?: WeTab, bulk?: boolean): Promise<void> {
     const [retain, close] = tabsInfo.rateGroupTabs(group, {
         preferAge: (options.keepNewerTab) ? "newest" : "oldest",
         preferPinned: options.keepPinnedTab,
@@ -12,21 +21,22 @@ async function closeDuplicateTabsGroup(group: Set<TabId>, observedTab?: WeTab): 
             tabId: retain,
             observedTabClosed: (observedTab && retain !== observedTab.id),
             tabIndex: observedTab?.index,
-            active: observedTab?.active,
+            active: observedTab?.active ?? false,
             reloadTab: options.keepReloadOlderTab,
+            bulk: bulk ?? false,
         };
         await Promise.all(close.map(removeTab));
         handleRemainingTab(keepInfo);
     }
 }
 
-async function handleRemainingTab(details: {tabId: TabId, reloadTab: boolean, observedTabClosed: boolean, tabIndex?: number, active?: boolean}): Promise<void> {
+async function handleRemainingTab(details: RemainingTabActions): Promise<void> {
     if (options.defaultTabBehavior && details.observedTabClosed) {
         if (details.tabIndex)
             moveTab(details.tabId, { index: details.tabIndex });
         if (details.active)
             activateTab(details.tabId);
-    } else if (options.activateKeptTab) {
+    } else if (options.activateKeptTab && !details.bulk) {
         activateTab(details.tabId);
         //focusTab(details.tabId, details.windowId);
     }
@@ -40,7 +50,7 @@ async function handleRemainingTab(details: {tabId: TabId, reloadTab: boolean, ob
 async function closeDuplicateTabs(windowId?: WindowId): Promise<void> {
     const window = tabsInfo.getWindow(windowId);
     for (const group of window.groups.values()) {
-        await closeDuplicateTabsGroup(group);
+        await closeDuplicateTabsGroup(group, undefined, true);
     }
 }
 
