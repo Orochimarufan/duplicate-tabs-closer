@@ -37,6 +37,31 @@ type _KeepOptions = {
     active?: number,
 }
 
+// Iterable helpers
+// Move somewhere else
+function *iterFilter<T>(iter: Iterable<T>, filterFn: (x: T) => boolean): Iterable<T> {
+    for (const item of iter) {
+        if (filterFn(item))
+            yield item;
+    }
+}
+
+function *iterFilterMap<T, U>(iter: Iterable<T>, filterMapFn: (x: T) => U|undefined): Iterable<U> {
+    for (const item of iter) {
+        const mapped = filterMapFn(item);
+        if (mapped !== undefined)
+            yield mapped;
+    }
+}
+
+function *iterFlat<T>(iter: Iterable<Iterable<T>>): Iterable<T> {
+    for (const inter of iter) {
+        for (const item of inter) {
+            yield item;
+        }
+    }
+}
+
 class Tracker {
     #tabs: Map<TabId, TabInfo>;
     #windows: Map<WindowId, WindowInfo>;
@@ -131,34 +156,29 @@ class Tracker {
     /// @brief Get a list of all tabs that have duplicates
     /// @note It includes the "real" tabs
     getDuplicateTabs(windowId: WindowId): TabId[] {
-        const window = this.getWindow(windowId);
-        const duplicateTabs: TabId[] = [];
-        for (const group of window.groups.values()) {
-            if (group.size > 1)
-                duplicateTabs.push(...group);
-        }
-        return duplicateTabs;
+        return Array.from(iterFlat(iterFilter(this.getWindow(windowId).groups.values(),
+                                              g => g.size > 1)));
     }
 
     /// @brief Get a list of the duplication groups
     getDuplicateGroups(windowId: WindowId): Set<TabId>[] {
-        const window = this.getWindow(windowId);
-        const duplicateGroups: Set<TabId>[] = [];
-        for (const group of window.groups.values()) {
-            if (group.size > 1)
-                duplicateGroups.push(group);
-        }
-        return duplicateGroups;
+        return Array.from(iterFilter(this.getWindow(windowId).groups.values(),
+                                     g => g.size > 1));
+    }
+
+    /// @brief Get a list of the duplication groups
+    getDuplicateGroupsWithKeys(windowId: WindowId): [string, Set<TabId>][] {
+        return Array.from(iterFilter(this.getWindow(windowId).groups.entries(),
+                                     ([k, g]) => g.size > 1));
     }
 
     /// @brief Get WebExtension Tab objects for all duplicate groups
     /// @note This is mostly useful for debugging
-    async fetchDuplicateGroupTabs(windowId: WindowId): Promise<WeTab[][]> {
-        return Promise.all(
-            this.getDuplicateGroups(windowId)
-                .map(async(group) =>
-                    await Promise.all(
-                        Array.from(group, id => getTab(id)))));
+    async fetchDuplicateGroupTabs(windowId: WindowId): Promise<[string, WeTab[]][]> {
+        return Promise.all(iterFilterMap(this.getWindow(windowId).groups.entries(),
+                ([k, g]) => g.size <= 1 ? undefined :
+                    Promise.all(Array.from(g, id => getTab(id)))
+                        .then(ts => [k, ts] as [string, WeTab[]])));
     }
 
     #newTabInfo(id: TabId, lastAccessed?: number): TabInfo {
